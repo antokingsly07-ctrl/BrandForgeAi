@@ -213,7 +213,3 @@ Manual verification checklist (run after `npm run build`):
 * No domain or trademark availability is ever claimed — every name carries the disclaimer `No automatic domain/trademark verification performed.`
 
 ---
-
-## License
-
-MIT — do what you want, but don't claim the simulated output is verified legal advice.
