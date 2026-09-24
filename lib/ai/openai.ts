@@ -93,6 +93,12 @@ export class OpenAIClient implements AIProvider {
         body: JSON.stringify({
           model: this.model,
           temperature: req.temperature ?? 0.7,
+          // Cap output length: reasoning models (e.g. Nemotron 3.5 Lightning)
+          // can otherwise emit very long thinking traces and blow past both
+          // our client timeout and Vercel's function duration limits.
+          // Override with AI_MAX_TOKENS. 8000 tokens comfortably fits the
+          // largest stage outputs (launch pack, critique reports).
+          max_tokens: Number(process.env.AI_MAX_TOKENS) || 8000,
           messages: [
             { role: 'system', content: req.system },
             { role: 'user', content: req.user },

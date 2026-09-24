@@ -9,6 +9,11 @@ import { generateStage, getAIMode } from '@/lib/ai/service';
 import type { ApiResponse, StageKey, Project } from '@/lib/types';
 import { STAGE_ORDER } from '@/lib/types';
 
+// Allow long generations on plans that support it (Pro: up to 300s).
+// Hobby caps functions at 60s regardless — the max_tokens cap in the AI
+// client keeps typical stages well under that.
+export const maxDuration = 300;
+
 function extractStage(req: NextRequest): StageKey {
   const url = new URL(req.url);
   const parts = url.pathname.split('/');
