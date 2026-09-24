@@ -1,11 +1,19 @@
 // ============================================================
-// BrandForge AI — JSON-file persistence store
-// A tiny, dependency-free document store used when no database
-// is present in the environment. Projects persist across reloads
-// and are accessible to every API route and the AI agents.
+// BrandForge AI — persistence store (Redis-backed with file fallback)
 //
-// A write-queue serializes writes so concurrent API calls never
-// corrupt the file.
+// Vercel serverless functions have NO shared filesystem: each instance
+// has its own memory and its own /tmp. The old file-only store meant a
+// project created on instance A was invisible to instance B, producing
+// "Project not found" on the very next API call in production.
+//
+// Backend selection:
+//   1. Upstash Redis (shared) when REST credentials are set — required
+//      for correct behavior on Vercel.
+//   2. Local JSON file otherwise (./data, or /tmp/brandforge-data on
+//      Vercel without Redis) — fine for local dev, ephemeral in prod.
+//
+// A write-queue serializes writes within an instance so concurrent API
+// calls never corrupt the file backend.
 // ============================================================
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -17,11 +25,48 @@ interface DBShape {
   projects: Project[];
 }
 
+// Backend selection:
+//   1. Upstash Redis (shared) when REST credentials are set — required for
+//      correct behavior on Vercel. The Upstash Redis Vercel integration
+//      auto-adds KV_REST_API_URL + KV_REST_API_TOKEN (legacy names kept
+//      for compatibility); UPSTASH_REDIS_REST_URL/TOKEN also work.
+//   2. Local JSON file otherwise (./data, or /tmp/brandforge-data on
+//      Vercel without Redis) — fine for local dev, ephemeral in prod.
+const KV_KEY = 'brandforge:db:v1';
+
+function redisCredentials(): { url: string; token: string } | null {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '';
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
+  if (url && token) return { url, token };
+  return null;
+}
+
+function useRedis(): boolean {
+  return redisCredentials() !== null;
+}
+
+async function redisGetDb(): Promise<DBShape> {
+  const creds = redisCredentials()!;
+  const { Redis } = await import('@upstash/redis');
+  const redis = new Redis({ url: creds.url, token: creds.token });
+  const data = await redis.get<DBShape>(KV_KEY);
+  if (data && Array.isArray(data.projects)) return data;
+  return { projects: [] };
+}
+
+async function redisSetDb(db: DBShape): Promise<void> {
+  const creds = redisCredentials()!;
+  const { Redis } = await import('@upstash/redis');
+  const redis = new Redis({ url: creds.url, token: creds.token });
+  await redis.set(KV_KEY, db);
+}
+
+// ------------------------------------------------------------
+// File backend (local dev / Vercel-without-KV fallback)
+// ------------------------------------------------------------
 // Vercel's serverless filesystem is read-only except /tmp, so writing to
-// ./data fails in production with EROFS ("Failed to create project").
-// Use /tmp on Vercel unless DATA_DIR is set explicitly. Note: /tmp is
-// ephemeral per instance — set DATA_DIR to persistent storage (or swap this
-// store for a real DB) if projects must survive restarts.
+// ./data fails in production with EROFS. Use /tmp on Vercel unless
+// DATA_DIR is set explicitly. Note: /tmp is ephemeral per instance.
 function resolveDataDir(): string {
   if (process.env.DATA_DIR) return process.env.DATA_DIR;
   if (process.env.VERCEL) return '/tmp/brandforge-data';
@@ -64,7 +109,7 @@ function makeProject(name: string, idea: string, opts: { isDemo?: boolean } = {}
   };
 }
 
-async function ensureDb(): Promise<void> {
+async function fileEnsureDb(): Promise<void> {
   if (dbCache) return;
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
@@ -75,22 +120,30 @@ async function ensureDb(): Promise<void> {
     };
   } catch {
     dbCache = { projects: [] };
-    await persist(dbCache);
+    await filePersist(dbCache);
   }
 }
 
-async function persist(db: DBShape): Promise<void> {
+async function filePersist(db: DBShape): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
 }
 
-async function readDb(): Promise<DBShape> {
-  await ensureDb();
+// ------------------------------------------------------------
+// Backend-agnostic load/save
+// ------------------------------------------------------------
+async function loadDb(): Promise<DBShape> {
+  if (useRedis()) return redisGetDb();
+  await fileEnsureDb();
   return dbCache!;
 }
 
-function writeDb(db: DBShape): Promise<void> {
-  writeChain = writeChain.then(() => persist(db)).catch(() => undefined);
+async function saveDb(db: DBShape): Promise<void> {
+  if (useRedis()) {
+    await redisSetDb(db);
+    return;
+  }
+  writeChain = writeChain.then(() => filePersist(db)).catch(() => undefined);
   return writeChain as Promise<void>;
 }
 
@@ -98,12 +151,12 @@ function writeDb(db: DBShape): Promise<void> {
 // Public API
 // ------------------------------------------------------------
 export async function listProjects(): Promise<Project[]> {
-  const db = await readDb();
+  const db = await loadDb();
   return [...db.projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export async function getProject(id: string): Promise<Project | null> {
-  const db = await readDb();
+  const db = await loadDb();
   return db.projects.find((p) => p.id === id) ?? null;
 }
 
@@ -114,18 +167,18 @@ export interface CreateProjectInput {
 }
 
 export async function createProject(input: CreateProjectInput): Promise<Project> {
-  const db = await readDb();
+  const db = await loadDb();
   const project =
     input.demo === true
       ? buildDemoProject()
       : makeProject((input.name || '').trim(), (input.idea || '').trim());
   db.projects.push(project);
-  await writeDb(db);
+  await saveDb(db);
   return project;
 }
 
 export async function updateProject(id: string, patch: Partial<Project>): Promise<Project | null> {
-  const db = await readDb();
+  const db = await loadDb();
   const idx = db.projects.findIndex((p) => p.id === id);
   if (idx === -1) return null;
   const existing = db.projects[idx];
@@ -135,7 +188,7 @@ export async function updateProject(id: string, patch: Partial<Project>): Promis
     id: existing.id,
     updatedAt: new Date().toISOString(),
   };
-  await writeDb(db);
+  await saveDb(db);
   return db.projects[idx];
 }
 
@@ -145,7 +198,7 @@ export async function saveStage(
   value: unknown,
   insight?: StageInsight,
 ): Promise<Project | null> {
-  const db = await readDb();
+  const db = await loadDb();
   const idx = db.projects.findIndex((p) => p.id === id);
   if (idx === -1) return null;
   const existing = db.projects[idx];
@@ -158,7 +211,7 @@ export async function saveStage(
     insights,
     updatedAt: new Date().toISOString(),
   };
-  await writeDb(db);
+  await saveDb(db);
   return db.projects[idx];
 }
 
@@ -167,11 +220,11 @@ export async function setActiveStage(id: string, stage: StageKey): Promise<Proje
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
-  const db = await readDb();
+  const db = await loadDb();
   const before = db.projects.length;
   db.projects = db.projects.filter((p) => p.id !== id);
   if (db.projects.length === before) return false;
-  await writeDb(db);
+  await saveDb(db);
   return true;
 }
 
@@ -180,4 +233,9 @@ export async function updateDiscoverySession(
   session: Project['discoverySession'],
 ): Promise<Project | null> {
   return updateProject(id, { discoverySession: session } as Partial<Project>);
+}
+
+/** Which storage backend is active — exposed for diagnostics. */
+export function storageBackend(): 'upstash-redis' | 'file' {
+  return useRedis() ? 'upstash-redis' : 'file';
 }
