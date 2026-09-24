@@ -64,7 +64,7 @@ Each stage: structured JSON stored in Project.stages[stage]
 ### AI layer
 
 * **Prompt contracts** (`lib/ai/prompts.ts`) — one system+user contract per stage demanding strict JSON + a `reasoning` array so judges see the strategy.
-* **Provider abstraction** (`lib/ai/provider.ts`, `openai.ts`, `mock.ts`, `service.ts`) — `AI_PROVIDER=auto|openai|mock`. `auto` uses a real OpenAI-compatible endpoint when `AI_API_KEY` is set, otherwise the **simulated provider**.
+* **Provider abstraction** (`lib/ai/provider.ts`, `openai.ts`, `mock.ts`, `service.ts`) — `AI_PROVIDER=auto|openai|nvidia|mock`. `auto` uses a real OpenAI-compatible endpoint when `AI_API_KEY` is set, NVIDIA Nemotron 3.5 Lightning when only `NVIDIA_API_KEY` is set, otherwise the **simulated provider**.
 * **Simulated provider** (`lib/ai/mock.ts`) — deterministic, strategy-reasoned generators for all 9 stages (seeded PRNG for regenerate variation). Clearly labelled in the UI; never disguised as real AI.
 * **Validation** (`lib/ai/validate.ts`) — every stage response is validated/normalized before persistence; malformed JSON maps to a friendly retry error.
 * **Persistence** — lightweight JSON-file store (`lib/store.ts`, `data/db.json`) with a write-queue. Gives real persistence across reloads without requiring a DB. Swappable for a real DB later.
@@ -130,9 +130,10 @@ cp .env.example .env.local
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `AI_PROVIDER` | no | `auto` | `auto` \| `openai` \| `mock`. `auto` uses real AI when `AI_API_KEY` is set, otherwise simulated. |
-| `AI_API_KEY` | no | — | OpenAI-compatible API key. Any provider that speaks `/chat/completions` works (OpenAI, OpenRouter, Groq, Together, Azure via `AI_BASE_URL`, local Ollama/LM Studio). |
-| `AI_MODEL` | no | `gpt-4o-mini` | Model ID to request. |
+| `AI_PROVIDER` | no | `auto` | `auto` \| `openai` \| `nvidia` \| `mock`. `auto` uses real AI when `AI_API_KEY` is set (or `NVIDIA_API_KEY` for Nemotron), otherwise simulated. |
+| `AI_API_KEY` | no | — | OpenAI-compatible API key. Any provider that speaks `/chat/completions` works (OpenAI, OpenRouter, Groq, Together, Azure via `AI_BASE_URL`, local Ollama/LM Studio). Can also hold an `nvapi-` key when `AI_PROVIDER=nvidia`. |
+| `NVIDIA_API_KEY` | no | — | NVIDIA key from build.nvidia.com (`nvapi-...`). Used for Nemotron 3.5 Lightning when `AI_PROVIDER=nvidia`, or automatically in `auto` mode if `AI_API_KEY` is unset. |
+| `AI_MODEL` | no | `gpt-4o-mini` (`nvidia/nemotron-3.5-lightning-30b-a3b` when NVIDIA is active) | Model ID to request. Leave empty with `AI_PROVIDER=nvidia` for the Nemotron default. |
 | `AI_BASE_URL` | no | `https://api.openai.com/v1` | Override for OpenAI-compatible endpoints. |
 | `AI_TIMEOUT_MS` | no | `90000` | HTTP timeout in ms. |
 | `DATA_DIR` | no | `./data` | Directory for `db.json` persistence. |
@@ -158,6 +159,15 @@ To use live AI:
 AI_API_KEY=sk-...        # or any OpenAI-compatible key
 AI_MODEL=gpt-4o-mini
 AI_BASE_URL=              # leave empty for OpenAI, or set to e.g. https://openrouter.ai/api/v1
+```
+
+For NVIDIA Nemotron 3.5 Lightning instead:
+
+```bash
+# .env.local
+AI_PROVIDER=nvidia
+NVIDIA_API_KEY=nvapi-...  # from https://build.nvidia.com
+# AI_MODEL and AI_BASE_URL can stay empty (defaults to the hosted Lightning model)
 ```
 
 Restart `npm run dev`.

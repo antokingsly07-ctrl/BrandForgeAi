@@ -18,18 +18,58 @@ let cachedMode: 'ai' | 'simulated' | null = null;
 function resolveMode(): 'ai' | 'simulated' {
   const env = process.env.AI_PROVIDER?.toLowerCase() ?? 'auto';
   if (env === 'mock') return 'simulated';
-  if (env === 'openai') return 'ai';
-  // auto
-  const key = process.env.AI_API_KEY;
-  if (key && key.trim().length > 0 && key !== 'sk-xxxx') return 'ai';
-  return 'simulated';
+  if (env === 'openai' || env === 'nvidia') return 'ai';
+  // auto — real AI when any usable key is present
+  const cfg = getProviderConfig();
+  return cfg.apiKey ? 'ai' : 'simulated';
+}
+
+// Provider presets. NVIDIA exposes Nemotron 3.5 Lightning through an
+// OpenAI-compatible API (https://integrate.api.nvidia.com/v1), so the same
+// /chat/completions client works — only the endpoint, model and key differ.
+// Get a key at https://build.nvidia.com (starts with nvapi-).
+const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+const NVIDIA_MODEL = 'nvidia/nemotron-3.5-lightning-30b-a3b';
+const OPENAI_BASE_URL = 'https://api.openai.com/v1';
+const OPENAI_MODEL = 'gpt-4o-mini';
+
+function isUsableKey(v: string | undefined): v is string {
+  const t = (v ?? '').trim();
+  return t.length > 0 && t !== 'sk-xxxx' && t !== 'nvapi-xxxx';
+}
+
+export interface ProviderConfig {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+}
+
+export function getProviderConfig(): ProviderConfig {
+  const provider = process.env.AI_PROVIDER?.toLowerCase() ?? 'auto';
+  const openaiKey = (process.env.AI_API_KEY ?? '').trim();
+  const nvidiaKey = (process.env.NVIDIA_API_KEY ?? '').trim();
+  const wantsNvidia =
+    provider === 'nvidia' ||
+    (provider !== 'openai' && !isUsableKey(openaiKey) && isUsableKey(nvidiaKey));
+  if (wantsNvidia) {
+    return {
+      apiKey: isUsableKey(openaiKey) ? openaiKey : nvidiaKey,
+      baseUrl: (process.env.AI_BASE_URL?.trim() || NVIDIA_BASE_URL).replace(/\/+$/, ''),
+      model: process.env.AI_MODEL?.trim() || NVIDIA_MODEL,
+    };
+  }
+  return {
+    apiKey: openaiKey,
+    baseUrl: (process.env.AI_BASE_URL?.trim() || OPENAI_BASE_URL).replace(/\/+$/, ''),
+    model: process.env.AI_MODEL?.trim() || OPENAI_MODEL,
+  };
 }
 
 export function getProvider(): AIProvider {
   if (cachedProvider && cachedMode === resolveMode()) return cachedProvider;
   const mode = resolveMode();
   if (mode === 'ai') {
-    cachedProvider = new OpenAIClient({});
+    cachedProvider = new OpenAIClient(getProviderConfig());
     cachedMode = 'ai';
   } else {
     // Simulated provider wrapper matching the interface
