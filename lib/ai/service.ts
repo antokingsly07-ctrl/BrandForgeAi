@@ -18,7 +18,7 @@ let cachedMode: 'ai' | 'simulated' | null = null;
 function resolveMode(): 'ai' | 'simulated' {
   const env = process.env.AI_PROVIDER?.toLowerCase() ?? 'auto';
   if (env === 'mock') return 'simulated';
-  if (env === 'openai' || env === 'nvidia') return 'ai';
+  if (env === 'openai' || env === 'nvidia' || env === 'local') return 'ai';
   // auto — real AI when any usable key is present
   const cfg = getProviderConfig();
   return cfg.apiKey ? 'ai' : 'simulated';
@@ -32,6 +32,11 @@ const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
 const NVIDIA_MODEL = 'nvidia/nemotron-3.5-lightning-30b-a3b';
 const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 const OPENAI_MODEL = 'gpt-4o-mini';
+// Local runtimes (Ollama, llama-server, vLLM, LM Studio) expose an
+// OpenAI-compatible API. Ollama's default is http://localhost:11434/v1
+// with the model id `nemotron-3.5-lightning` after `ollama pull`.
+const LOCAL_BASE_URL = 'http://localhost:11434/v1';
+const LOCAL_MODEL = 'nemotron-3.5-lightning';
 
 function isUsableKey(v: string | undefined): v is string {
   const t = (v ?? '').trim();
@@ -42,12 +47,22 @@ export interface ProviderConfig {
   apiKey: string;
   baseUrl: string;
   model: string;
+  /** Local runtimes (Ollama etc.) ignore API keys — allow empty. */
+  allowEmptyKey?: boolean;
 }
 
 export function getProviderConfig(): ProviderConfig {
   const provider = process.env.AI_PROVIDER?.toLowerCase() ?? 'auto';
   const openaiKey = (process.env.AI_API_KEY ?? '').trim();
   const nvidiaKey = (process.env.NVIDIA_API_KEY ?? '').trim();
+  if (provider === 'local') {
+    return {
+      apiKey: openaiKey || nvidiaKey,
+      baseUrl: (process.env.AI_BASE_URL?.trim() || LOCAL_BASE_URL).replace(/\/+$/, ''),
+      model: process.env.AI_MODEL?.trim() || LOCAL_MODEL,
+      allowEmptyKey: true,
+    };
+  }
   const wantsNvidia =
     provider === 'nvidia' ||
     (provider !== 'openai' && !isUsableKey(openaiKey) && isUsableKey(nvidiaKey));

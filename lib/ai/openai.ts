@@ -66,30 +66,31 @@ export class OpenAIClient implements AIProvider {
   private apiKey: string;
   private model: string;
   private timeoutMs: number;
+  private allowEmptyKey: boolean;
 
-  constructor(opts: { apiKey?: string; baseUrl?: string; model?: string; timeoutMs?: number }) {
+  constructor(opts: { apiKey?: string; baseUrl?: string; model?: string; timeoutMs?: number; allowEmptyKey?: boolean }) {
     this.apiKey = opts.apiKey || process.env.AI_API_KEY || '';
     this.model = opts.model || process.env.AI_MODEL || 'gpt-4o-mini';
     this.timeoutMs = opts.timeoutMs ?? (Number(process.env.AI_TIMEOUT_MS) || 90_000);
     const base = opts.baseUrl || process.env.AI_BASE_URL || '';
     this.baseUrl = base ? base.replace(/\/+$/, '') : 'https://api.openai.com/v1';
     this.label = this.model;
+    this.allowEmptyKey = opts.allowEmptyKey ?? false;
   }
 
   async generateJSON(req: AIRequest): Promise<AIResult> {
-    if (!this.apiKey) {
+    if (!this.apiKey && !this.allowEmptyKey) {
       return { ok: false, error: 'AI_API_KEY is not configured. Add it to .env.local or switch AI_PROVIDER=mock.' };
     }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     let res: Response;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.apiKey) headers.Authorization = `Bearer ${this.apiKey}`;
     try {
       res = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
+        headers,
         body: JSON.stringify({
           model: this.model,
           temperature: req.temperature ?? 0.7,
@@ -110,6 +111,12 @@ export class OpenAIClient implements AIProvider {
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
         return { ok: false, error: `The AI request timed out after ${Math.round(this.timeoutMs / 1000)}s. Try again.` };
+      }
+      if (/localhost|127\.0\.0\.1/.test(this.baseUrl)) {
+        return {
+          ok: false,
+          error: `Cannot reach the local model server at ${this.baseUrl}. Install Ollama, run "ollama pull nemotron-3.5-lightning", and make sure "ollama serve" is running.`,
+        };
       }
       return { ok: false, error: e instanceof Error ? e.message : 'Network error calling the AI provider.' };
     } finally {

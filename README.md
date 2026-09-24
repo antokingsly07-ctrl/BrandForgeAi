@@ -130,7 +130,7 @@ cp .env.example .env.local
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `AI_PROVIDER` | no | `auto` | `auto` \| `openai` \| `nvidia` \| `mock`. `auto` uses real AI when `AI_API_KEY` is set (or `NVIDIA_API_KEY` for Nemotron), otherwise simulated. |
+| `AI_PROVIDER` | no | `auto` | `auto` \| `openai` \| `nvidia` \| `local` \| `mock`. `auto` uses real AI when `AI_API_KEY` is set (or `NVIDIA_API_KEY` for Nemotron), otherwise simulated. |
 | `AI_API_KEY` | no | — | OpenAI-compatible API key. Any provider that speaks `/chat/completions` works (OpenAI, OpenRouter, Groq, Together, Azure via `AI_BASE_URL`, local Ollama/LM Studio). Can also hold an `nvapi-` key when `AI_PROVIDER=nvidia`. |
 | `NVIDIA_API_KEY` | no | — | NVIDIA key from build.nvidia.com (`nvapi-...`). Used for Nemotron 3.5 Lightning when `AI_PROVIDER=nvidia`, or automatically in `auto` mode if `AI_API_KEY` is unset. |
 | `AI_MODEL` | no | `gpt-4o-mini` (`nvidia/nemotron-3.5-lightning-30b-a3b` when NVIDIA is active) | Model ID to request. Leave empty with `AI_PROVIDER=nvidia` for the Nemotron default. |
@@ -169,6 +169,21 @@ AI_PROVIDER=nvidia
 NVIDIA_API_KEY=nvapi-...  # from https://build.nvidia.com
 # AI_MODEL and AI_BASE_URL can stay empty (defaults to the hosted Lightning model)
 ```
+
+To run Nemotron 3.5 Lightning **on your own machine** (no cloud, no key):
+
+```bash
+# 1. Install Ollama from https://ollama.com
+# 2. Pull the model once (~25GB):
+npm run ai:pull
+# 3. Make sure Ollama is serving: ollama serve
+# 4. .env.local:
+AI_PROVIDER=local
+# AI_MODEL and AI_BASE_URL default to nemotron-3.5-lightning on http://localhost:11434/v1
+# Slow hardware? Add: AI_TIMEOUT_MS=300000 and AI_MAX_TOKENS=4000
+```
+
+Hardware reality check: the 4-bit model needs ~20GB free RAM/VRAM, so a discrete GPU is strongly recommended — CPU-only works but each stage can take minutes. This only applies to local runs (`npm run dev`); the Vercel deployment can't host the weights and keeps using the hosted API.
 
 Restart `npm run dev`.
 

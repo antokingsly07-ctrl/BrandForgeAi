@@ -8,7 +8,8 @@
     "prebuild": "node -e \"require('fs').mkdirSync('.next/server/pages',{recursive:true})\"",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ai:pull": "ollama pull nemotron-3.5-lightning"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",
