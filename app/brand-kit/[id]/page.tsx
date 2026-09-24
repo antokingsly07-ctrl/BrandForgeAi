@@ -134,7 +134,7 @@ export default function BrandKitPage() {
           <p className="text-brand-100 mt-3 leading-relaxed max-w-2xl">“{project.idea}”</p>
           <p className="text-xs text-brand-200/70 mt-6">Generated {new Date(project.updatedAt).toLocaleDateString()} · Shareable view · Print to PDF</p>
           <div className="no-print mt-6 flex flex-wrap gap-2">
-            <button onClick={() => window.print()} className="btn bg-white text-ink-900 hover:bg-ink-50">
+            <button onClick={() => window.print()} className="btn bg-white text-[#08090B] hover:bg-white/90">
               <Printer className="w-4 h-4" />
               Print / Save as PDF
             </button>
@@ -498,10 +498,10 @@ export default function BrandKitPage() {
           <Section title="20 · Launch content" k="Launch">
             {s.launch ? (
               <div className="space-y-4 text-sm">
-                <div className="bg-gradient-to-br from-ink-900 to-brand-900 rounded-2xl p-6 text-white">
+                <div className="bg-gradient-to-br from-[#0B0C0F] to-[#2E1A62] rounded-2xl p-6 text-white border border-white/[0.06]">
                   <p className="font-display text-xl font-bold">{s.launch.landing.heroHeadline}</p>
-                  <p className="text-brand-100 mt-2">{s.launch.landing.subheadline}</p>
-                  <span className="inline-flex mt-3 px-3 py-1.5 rounded-xl bg-white text-ink-900 text-xs font-semibold">{s.launch.landing.cta}</span>
+                  <p className="text-[#C084FC]/80 mt-2">{s.launch.landing.subheadline}</p>
+                  <span className="inline-flex mt-3 px-3 py-1.5 rounded-xl bg-white text-[#08090B] text-xs font-semibold">{s.launch.landing.cta}</span>
                 </div>
                 <div>
                   <p className="font-semibold text-ink-900">Social</p>
@@ -549,7 +549,7 @@ function Section({ title, k, children }: { title: string; k: string; children: R
   return (
     <section className="card print-break">
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-7 h-7 rounded-lg bg-ink-900 text-white flex items-center justify-center text-xs font-bold">{k[0]}</span>
+        <span className="w-7 h-7 rounded-lg bg-[#8B3DFF] text-white flex items-center justify-center text-xs font-bold">{k[0]}</span>
         <h2 className="font-display font-semibold text-ink-900">{title}</h2>
       </div>
       <div>{children}</div>

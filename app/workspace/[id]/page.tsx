@@ -63,7 +63,7 @@ function StageHeader({ stage, subtitle, action }: { stage: StageKey; subtitle?: 
   return (
     <div className="flex items-start justify-between gap-4 mb-6">
       <div className="flex gap-4">
-        <div className="w-11 h-11 rounded-2xl bg-ink-900 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-2xl bg-[#8B3DFF] flex items-center justify-center shrink-0" style={{ boxShadow: '0 2px 12px rgba(139,61,255,0.35)' }}>
           <Icon className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -109,7 +109,7 @@ function InsightRail({ project, stage }: { project: Project; stage: StageKey }) 
           )}
           <div>
             <p className="text-xs font-semibold tracking-widest uppercase text-ink-400 mb-2">Prompt contract (truncated)</p>
-            <pre className="text-xs bg-white border border-ink-200 rounded-xl p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-ink-600">
+            <pre className="text-xs bg-[#0B0C0F] border border-white/[0.06] rounded-xl p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-[#A1A1AA]">
               {insight.prompt.slice(0, 900)}
               {insight.prompt.length > 900 ? "…" : ""}
             </pre>
@@ -264,7 +264,7 @@ export default function WorkspacePage() {
                 key={k}
                 href={`/workspace/${project.id}?s=${k}`}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  active ? "bg-ink-900 text-white border-ink-900" : done ? "bg-mint-50 text-mint-700 border-mint-200" : "bg-white text-ink-600 border-ink-200"
+                  active ? "bg-[#8B3DFF] text-white border-[#8B3DFF]" : done ? "bg-[#2FD3A5]/10 text-[#45D8B1] border-[#2FD3A5]/20" : "bg-[#18191D] text-[#A1A1AA] border-white/[0.06]"
                 }`}
               >
                 {STAGE_META[k].short}
@@ -469,7 +469,7 @@ function DiscoveryView({
                     <button
                       key={opt}
                       onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                      className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${answers[q.id] === opt ? "bg-brand-600 text-white border-brand-600" : "bg-white text-ink-700 border-ink-200 hover:border-ink-300"}`}
+                      className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${answers[q.id] === opt ? "bg-[#8B3DFF] text-white border-[#8B3DFF]" : "bg-[#18191D] text-[#A1A1AA] border-white/[0.06] hover:border-white/[0.12] hover:text-white"}`}
                     >
                       {opt}
                     </button>
@@ -1026,7 +1026,7 @@ function MessagingView({
               <button
                 key={t}
                 onClick={() => pickTagline(t)}
-                className={`px-4 py-2 rounded-full text-sm border transition-colors ${selected ? "bg-brand-600 text-white border-brand-600" : "bg-white text-ink-700 border-ink-200 hover:border-ink-300"}`}
+                className={`px-4 py-2 rounded-full text-sm border transition-colors ${selected ? "bg-[#8B3DFF] text-white border-[#8B3DFF]" : "bg-[#18191D] text-[#A1A1AA] border-white/[0.06] hover:border-white/[0.12] hover:text-white"}`}
               >
                 “{t}” {selected ? "✓" : ""}
               </button>
@@ -1522,10 +1522,10 @@ function LaunchView({
           Landing page
         </h3>
         <div className="mt-3 space-y-3">
-          <div className="bg-gradient-to-br from-ink-900 to-brand-900 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-br from-[#0B0C0F] to-[#2E1A62] rounded-2xl p-6 text-white border border-white/[0.06]">
             <p className="font-display text-2xl font-bold">{launch.landing.heroHeadline}</p>
-            <p className="text-brand-100 mt-2 leading-relaxed">{launch.landing.subheadline}</p>
-            <span className="inline-flex mt-4 px-4 py-2 rounded-xl bg-white text-ink-900 text-sm font-semibold">{launch.landing.cta}</span>
+            <p className="text-[#C084FC]/80 mt-2 leading-relaxed">{launch.landing.subheadline}</p>
+            <span className="inline-flex mt-4 px-4 py-2 rounded-xl bg-white text-[#08090B] text-sm font-semibold">{launch.landing.cta}</span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             {launch.landing.features.map((f) => (
