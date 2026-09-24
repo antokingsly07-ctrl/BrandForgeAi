@@ -17,7 +17,18 @@ interface DBShape {
   projects: Project[];
 }
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+// Vercel's serverless filesystem is read-only except /tmp, so writing to
+// ./data fails in production with EROFS ("Failed to create project").
+// Use /tmp on Vercel unless DATA_DIR is set explicitly. Note: /tmp is
+// ephemeral per instance — set DATA_DIR to persistent storage (or swap this
+// store for a real DB) if projects must survive restarts.
+function resolveDataDir(): string {
+  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  if (process.env.VERCEL) return '/tmp/brandforge-data';
+  return path.join(process.cwd(), 'data');
+}
+
+const DATA_DIR = resolveDataDir();
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 let dbCache: DBShape | null = null;

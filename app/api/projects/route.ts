@@ -18,7 +18,9 @@ export async function GET(): Promise<NextResponse<ApiResponse<Project[]>>> {
     const projects = await listProjects();
     return NextResponse.json({ ok: true, data: projects });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: 'Failed to list projects' }, { status: 500 });
+    console.error('GET /api/projects failed:', e);
+    const detail = e instanceof Error ? e.message : 'unknown error';
+    return NextResponse.json({ ok: false, error: `Failed to list projects: ${detail}` }, { status: 500 });
   }
 }
 
@@ -34,6 +36,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<P
     const project = isDemo ? await createProject({ name: "Teampact", idea: "demo", demo: true }) : await createProject({ name: name || titleFromIdea(idea), idea });
     return NextResponse.json({ ok: true, data: project });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: 'Failed to create project' }, { status: 500 });
+    console.error('POST /api/projects failed:', e);
+    const detail = e instanceof Error ? e.message : 'unknown error';
+    return NextResponse.json({ ok: false, error: `Failed to create project: ${detail}` }, { status: 500 });
   }
 }
