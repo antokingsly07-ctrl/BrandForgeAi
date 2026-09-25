@@ -451,7 +451,7 @@ export default function BrandKitPage() {
             {s.critique ? (
               <div className="space-y-3">
                 <p className="text-sm">
-                  <span className="font-semibold">Score:</span> {s.critique.score}/100 · {s.critique.summary}
+                  <span className="font-semibold">Score:</span> <span className="font-mono">{s.critique.score}/100</span> · {s.critique.summary}
                 </p>
                 {s.critique.issues.length > 0 && (
                   <ul className="space-y-2">
@@ -476,7 +476,7 @@ export default function BrandKitPage() {
             {s.consistency ? (
               <div className="space-y-2 text-sm">
                 <p>
-                  <span className="font-semibold">Status:</span> {s.consistency.status} · {s.consistency.score}/100
+                  <span className="font-semibold">Status:</span> {s.consistency.status} · <span className="font-mono">{s.consistency.score}/100</span>
                 </p>
                 <p className="text-ink-600">{s.consistency.summary}</p>
                 {s.consistency.conflicts.length > 0 && (
@@ -539,7 +539,7 @@ export default function BrandKitPage() {
           </Link>
         </div>
 
-        <p className="mt-8 text-center text-xs text-ink-400">BrandForge AI — shareable Brand Kit · {project.id}</p>
+        <p className="mt-8 text-center text-xs text-ink-400">BrandForge AI — shareable Brand Kit · <span className="font-mono">{project.id}</span></p>
       </main>
     </div>
   );

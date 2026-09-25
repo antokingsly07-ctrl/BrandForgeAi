@@ -3,18 +3,18 @@
 // Loads fonts via next/font, provides global providers
 // ============================================================
 import type { Metadata, Viewport } from 'next';
-import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, Sora, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ScrollProgress, GlobalAnimations } from '@/components/animations';
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
   weight: ['400', '500', '600', '700'],
 });
 
-const spaceGrotesk = Space_Grotesk({
+const sora = Sora({
   subsets: ['latin'],
   variable: '--font-display',
   display: 'swap',
@@ -48,8 +48,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-[#08090B] text-[#F5F5F5] antialiased">
+    <html lang="en" className={`${jakarta.variable} ${sora.variable} ${jetbrainsMono.variable}`}>
+      <body className="min-h-screen bg-[#08090B] text-[#F5F5F5] font-sans antialiased">
         <ScrollProgress />
         <GlobalAnimations />
         {children}

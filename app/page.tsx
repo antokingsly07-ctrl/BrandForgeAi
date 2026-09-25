@@ -95,7 +95,7 @@ export default function LandingPage() {
                     <span className="w-3 h-3 rounded-full bg-white/10" />
                     <span className="w-3 h-3 rounded-full bg-white/10" />
                     <span className="w-3 h-3 rounded-full bg-white/10" />
-                    <span className="ml-3 text-xs text-[#71717A]">brandforge.ai · workspace</span>
+                    <span className="ml-3 text-xs font-mono text-[#71717A]">brandforge.ai · workspace</span>
                   </div>
                   <div className="relative p-5 sm:p-6">
                     <div className="absolute right-6 top-6 w-[180px] h-[180px] rounded-[32px] opacity-60 animate-float" style={{ background: 'linear-gradient(135deg, #8B3DFF 0%, #A855F7 60%, #C084FC 100%)', filter: 'blur(1px)', transform: 'rotate(12deg)', boxShadow: '0 20px 40px rgba(139,61,255,0.4)', animationDelay: '0.5s' }} />
@@ -103,7 +103,8 @@ export default function LandingPage() {
                     <div className="relative z-10 space-y-3 max-w-[280px]">
                       <div className="flex items-center gap-2">
                         <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ background: 'linear-gradient(135deg, #8B3DFF, #A855F7)' }}>✦</span>
-                        <span className="text-xs font-semibold text-white/80 tracking-widest uppercase">Discovery · 82%</span>
+                        <span className="text-xs font-display font-semibold text-white tracking-widest uppercase">Discovery</span>
+                        <span className="text-xs font-mono text-white/80"> · 82%</span>
                       </div>
                       <div className="h-2.5 w-3/4 rounded-full bg-white/10 overflow-hidden">
                         <div className="h-full w-[82%] rounded-full animate-[shimmer_2s_linear_infinite]" style={{ background: 'linear-gradient(90deg, #8B3DFF, #A855F7)' }} />
@@ -143,7 +144,7 @@ export default function LandingPage() {
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 border border-[#8B3DFF]/20 group-hover:scale-110 transition-transform duration-300" style={{ background: 'rgba(139,61,255,0.12)' }}>
                       <step.icon className="w-4 h-4 text-[#C084FC] group-hover:text-white transition-colors" />
                     </div>
-                    <h3 className="font-semibold text-sm text-white">{step.title}</h3>
+                    <h3 className="font-display font-semibold text-sm text-white tracking-tight">{step.title}</h3>
                     <p className="text-xs leading-relaxed text-[#71717A] mt-1 line-clamp-3">{step.desc}</p>
                   </div>
                 </div>
@@ -193,7 +194,7 @@ export default function LandingPage() {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 border border-[#8B3DFF]/15 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300" style={{ background: 'rgba(139,61,255,0.1)' }}>
                     <item.icon className="w-5 h-5 text-[#C084FC] group-hover:text-white transition-colors" />
                   </div>
-                  <h3 className="font-semibold text-white">{item.title}</h3>
+                  <h3 className="font-display font-semibold text-white tracking-tight">{item.title}</h3>
                   <p className="text-sm leading-relaxed text-[#A1A1AA] mt-2">{item.desc}</p>
                 </div>
               </Reveal>

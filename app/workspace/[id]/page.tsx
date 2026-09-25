@@ -86,7 +86,7 @@ function InsightRail({ project, stage }: { project: Project; stage: StageKey }) 
         <span className="text-sm font-semibold text-ink-700 flex items-center gap-2">
           <Info className="w-4 h-4 text-ink-500" />
           AI Insight
-          <span className={insight.mode === "ai" ? "badge-primary text-[10px] px-2 py-0" : "badge-warning text-[10px] px-2 py-0"}>
+          <span className={insight.mode === "ai" ? "badge-primary font-mono text-[10px] px-2 py-0" : "badge-warning font-mono text-[10px] px-2 py-0"}>
             {insight.mode === "ai" ? `AI · ${insight.model}` : `Simulated · ${insight.model}`}
           </span>
         </span>
@@ -109,12 +109,12 @@ function InsightRail({ project, stage }: { project: Project; stage: StageKey }) 
           )}
           <div>
             <p className="text-xs font-semibold tracking-widest uppercase text-ink-400 mb-2">Prompt contract (truncated)</p>
-            <pre className="text-xs bg-[#0B0C0F] border border-white/[0.06] rounded-xl p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-[#A1A1AA]">
+            <pre className="font-mono text-xs bg-[#0B0C0F] border border-white/[0.06] rounded-xl p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-[#A1A1AA]">
               {insight.prompt.slice(0, 900)}
               {insight.prompt.length > 900 ? "…" : ""}
             </pre>
           </div>
-          <p className="text-xs text-ink-400">Generated {new Date(insight.generatedAt).toLocaleString()}</p>
+          <p className="text-xs text-ink-400">Generated <span className="font-mono text-ink-500">{new Date(insight.generatedAt).toLocaleString()}</span></p>
         </div>
       )}
     </div>
@@ -137,7 +137,7 @@ function ScoreRing({ score }: { score: number }) {
           strokeLinecap="round"
         />
       </svg>
-      <span className="absolute text-sm font-bold text-ink-900">{score}</span>
+      <span className="absolute text-sm font-mono font-bold text-ink-900">{score}</span>
     </div>
   );
 }
@@ -791,7 +791,7 @@ function PersonalityView({
       />
       <div className="grid gap-4">
         <div className="card">
-          <h3 className="font-semibold text-ink-900">Traits</h3>
+          <h3 className="font-display font-semibold text-ink-900">Traits</h3>
           <div className="mt-3 grid sm:grid-cols-2 gap-3">
             {personality.traits.map((t) => (
               <div key={t.trait} className="bg-ink-50 border border-ink-100 rounded-xl p-3">
@@ -808,7 +808,7 @@ function PersonalityView({
         <ListCard title="Emotional characteristics" items={personality.emotionalCharacteristics} />
         <InfoCard title="Communication style" text={personality.communicationStyle} />
         <div className="card">
-          <h3 className="font-semibold text-ink-900">Voice</h3>
+          <h3 className="font-display font-semibold text-ink-900">Voice</h3>
           <div className="mt-3 space-y-2">
             {personality.voice.map((v) => (
               <div key={v.characteristic} className="flex gap-3 text-sm">
@@ -1018,7 +1018,7 @@ function MessagingView({
         }
       />
       <div className="card">
-        <h3 className="font-semibold text-ink-900">Taglines</h3>
+        <h3 className="font-display font-semibold text-ink-900">Taglines</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {messaging.taglines.map((t) => {
             const selected = messaging.selectedTagline === t;
@@ -1040,7 +1040,7 @@ function MessagingView({
       <InfoCard title="Key message" text={messaging.keyMessage} />
       <ListCard title="Supporting messages" items={messaging.supportingMessages} />
       <div className="card">
-        <h3 className="font-semibold text-ink-900">CTAs</h3>
+        <h3 className="font-display font-semibold text-ink-900">CTAs</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           {messaging.ctas.map((c) => (
             <span key={c} className="badge-primary">
@@ -1108,7 +1108,7 @@ function VisualView({
         <p className="mt-2 text-sm text-ink-500">{visual.conceptWhy}</p>
       </div>
       <div className="card">
-        <h3 className="font-semibold text-ink-900">Color direction</h3>
+        <h3 className="font-display font-semibold text-ink-900">Color direction</h3>
         <p className="text-sm text-ink-600 mt-1">{visual.colorDirection}</p>
         <div className="mt-4 grid sm:grid-cols-2 gap-4">
           <div>
@@ -1130,7 +1130,7 @@ function VisualView({
         </div>
       </div>
       <div className="card">
-        <h3 className="font-semibold text-ink-900">Typography</h3>
+        <h3 className="font-display font-semibold text-ink-900">Typography</h3>
         <p className="text-sm text-ink-600 mt-1">{visual.typographyDirection}</p>
         <div className="mt-3 space-y-2">
           {visual.fonts.map((f) => (
@@ -1248,7 +1248,7 @@ function CritiqueView({
       </div>
       {critique.strengths.length > 0 && (
         <div className="card">
-          <h3 className="font-semibold text-ink-900 flex items-center gap-2">
+          <h3 className="font-display font-semibold text-ink-900 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-mint-500" />
             Strengths
           </h3>
@@ -1263,7 +1263,7 @@ function CritiqueView({
         </div>
       )}
       <div className="space-y-3">
-        <h3 className="font-semibold text-ink-900">Issues ({critique.issues.length})</h3>
+        <h3 className="font-display font-semibold text-ink-900">Issues ({critique.issues.length})</h3>
         {critique.issues.map((issue) => (
           <div key={issue.id} className={`card-compact border-l-4 ${issue.severity === "high" ? "border-l-ember-500" : issue.severity === "medium" ? "border-l-amber-500" : "border-l-ink-300"}`}>
             <div className="flex items-start justify-between gap-3">
@@ -1289,7 +1289,7 @@ function CritiqueView({
                   </div>
                   {issue.target && (
                     <p className="text-xs text-ink-500 mt-2">
-                      Targets: <code className="px-1.5 py-0.5 bg-ink-100 rounded">{issue.target.stage}.{issue.target.path}</code>
+                      Targets: <code className="px-1.5 py-0.5 bg-ink-100 rounded font-mono text-[11px]">{issue.target.stage}.{issue.target.path}</code>
                       {issue.target.label ? ` — ${issue.target.label}` : ""}
                     </p>
                   )}
@@ -1401,7 +1401,7 @@ function ConsistencyView({
       </div>
       {report.strengths.length > 0 && (
         <div className="card">
-          <h3 className="font-semibold text-ink-900 flex items-center gap-2">
+          <h3 className="font-display font-semibold text-ink-900 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-mint-500" />
             Strengths
           </h3>
@@ -1417,7 +1417,7 @@ function ConsistencyView({
       )}
       {report.conflicts.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="font-semibold text-ink-900">Conflicts ({report.conflicts.length})</h3>
+          <h3 className="font-display font-semibold text-ink-900">Conflicts ({report.conflicts.length})</h3>
           {report.conflicts.map((c) => (
             <div key={c.id} className={`card-compact border-l-4 ${c.severity === "high" ? "border-l-ember-500" : c.severity === "medium" ? "border-l-amber-500" : "border-l-ink-300"}`}>
               <div className="flex items-center gap-2 flex-wrap">
@@ -1517,7 +1517,7 @@ function LaunchView({
         }
       />
       <div className="card">
-        <h3 className="font-semibold text-ink-900 flex items-center gap-2">
+        <h3 className="font-display font-semibold text-ink-900 flex items-center gap-2">
           <Rocket className="w-4 h-4 text-brand-600" />
           Landing page
         </h3>
@@ -1540,7 +1540,7 @@ function LaunchView({
       </div>
 
       <div className="card">
-        <h3 className="font-semibold text-ink-900">Social</h3>
+        <h3 className="font-display font-semibold text-ink-900">Social</h3>
         <div className="mt-3 grid gap-3">
           <CopyBlock label="Launch post" text={launch.social.launchPost} />
           <CopyBlock label="Short announcement" text={launch.social.shortAnnouncement} />
@@ -1551,7 +1551,7 @@ function LaunchView({
       </div>
 
       <div className="card">
-        <h3 className="font-semibold text-ink-900">Product messaging</h3>
+        <h3 className="font-display font-semibold text-ink-900">Product messaging</h3>
         <div className="mt-3 space-y-3">
           <CopyBlock label="App description" text={launch.productMessaging.appDescription} />
           <CopyBlock label="Short description" text={launch.productMessaging.shortDescription} />

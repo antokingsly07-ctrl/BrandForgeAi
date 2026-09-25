@@ -173,7 +173,7 @@ export default function NewBrandPage() {
         </Reveal>
 
         <p className="mt-6 text-center text-xs text-[#71717A]">
-          No API key needed — runs in simulated mode. Add your OpenAI-compatible key to <code className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.06] text-[#A1A1AA]">.env.local</code> for live AI.
+          No API key needed — runs in simulated mode. Add your OpenAI-compatible key to <code className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.06] text-[#A1A1AA] font-mono">.env.local</code> for live AI.
         </p>
       </main>
     </div>
